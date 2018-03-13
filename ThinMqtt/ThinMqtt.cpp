@@ -65,6 +65,15 @@ void ThinMqtt::release()
     pthread_join(mMainThread, NULL);
 }
 
+void ThinMqtt::on_message(const struct mosquitto_message *message)
+{
+    char *topic = message->topic;
+    void *payload = message->payload;
+    int payloadlen = message->payloadlen;
+
+    //check the message
+}
+
 int ThinMqtt::makeNoneBlock(int fd)
 {
     int flags, ret;
@@ -115,6 +124,40 @@ void ThinMqtt::process(ThinMQTTClient *client)
     for(int i = 0; i < outputVec.size(); i++) {
         LOGD(" - %s\n", outputVec[i].c_str());
     }
+    //get id;
+    if(outputVec[0].compare(0, 2, ">>") == 0) {
+        //::snprintf(client->id, CLIENT_ID_MAX, "%s", outputVec[0].c_str() + 2);
+        ::memcpy(client->id, outputVec[0].c_str() + 2, outputVec[0].length());
+    }
+    if(outputVec[1].compare("connect") == 0) {
+        client->status &= ~STATUS_DISCONNECT;
+        client->status |= STATUS_CONNECTED;
+        //connect action
+    } else if(outputVec[1].compare("disconnect") == 0) {
+        //disconnect action
+        client->status &= ~STATUS_CONNECTED;
+        client->status |= STATUS_DISCONNECT;
+    } else if(outputVec[1].compare("ping") == 0) {
+
+    } else if(outputVec[1].compare("publish") == 0) {
+        //publish action
+        if(client->status & STATUS_CONNECTED) {
+            //publish the topic to mqtt
+            LOGD(" -> publish topic: %s, message: %s\n", outputVec[2].c_str(), outputVec[3].c_str());
+        } else {
+            LOGE("client %s not connected, cannot publish message\n", client->id);
+        }
+    } else if(outputVec[1].compare("subscribe") == 0) {
+        //subscribe action
+        if(client->status & STATUS_CONNECTED) {
+            //subscribe the topic to mqtt
+            LOGD(" -> subscribe topic: %s\n", outputVec[2].c_str());
+            ::memcpy(client->topic, outputVec[2].c_str(), outputVec[2].length());
+        } else {
+            LOGE("client %s not connected, cannot subscribe topic\n", client->id);
+        }
+    }
+
     LOGD("%s: X\n", __func__);
 }
 

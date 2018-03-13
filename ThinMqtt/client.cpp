@@ -36,7 +36,7 @@ void thin_mqtt_connect(int fd)
 {
     char buf[128] = {0};
 
-    int bytes = ::snprintf(buf, 128, ">>%s,con,", CLIENT_ID);
+    int bytes = ::snprintf(buf, 128, ">>%s,connect,", CLIENT_ID);
     uint8_t cs = 0x00;
     for(int i = 0; i < bytes; i++) {
         cs ^= buf[i];
@@ -51,7 +51,7 @@ void thin_mqtt_disconnect(int fd)
 {
     char buf[128] = {0};
 
-    int bytes = ::snprintf(buf, 128, ">>%s,discon,", CLIENT_ID);
+    int bytes = ::snprintf(buf, 128, ">>%s,disconnect,", CLIENT_ID);
     uint8_t cs = 0x00;
     for(int i = 0; i < bytes; i++) {
         cs ^= buf[i];
@@ -81,7 +81,7 @@ void thin_mqtt_publish(int fd, const char *topic, const char *message)
 {
     char buf[1024] = {0};
 
-    int bytes = ::snprintf(buf, 1024, ">>%s,pub,%s,%s,", CLIENT_ID, topic, message);
+    int bytes = ::snprintf(buf, 1024, ">>%s,publish,%s,%s,", CLIENT_ID, topic, message);
     uint8_t cs = 0x00;
     for(int i = 0; i < bytes; i++) {
         cs ^= buf[i];
